@@ -214,6 +214,12 @@ Trainable parameters:
 29,933,568 / 3,115,872,256
 ≈ 0.96%
 ```
+### Trained Model
+
+The fine-tuned QLoRA adapter is hosted on Hugging Face:
+
+[**AgentGuard QLoRA on Hugging Face**](https://huggingface.co/Mihirbarve/agentguard-qlora)
+
 
 ### Dataset Split
 
