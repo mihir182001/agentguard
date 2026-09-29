@@ -1,4 +1,3 @@
-
 ALLOWED_ACTIONS = {
     "refund",
     "transfer",

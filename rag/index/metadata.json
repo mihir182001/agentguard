@@ -1,0 +1,254 @@
+[
+  {
+    "source": "bank_transfer.md",
+    "text": "# Bank Transfer Policy"
+  },
+  {
+    "source": "bank_transfer.md",
+    "text": "## Purpose\n\nThis policy defines how bank-transfer questions should\nbe handled."
+  },
+  {
+    "source": "bank_transfer.md",
+    "text": "## Investigation Steps\n\nWhen a customer asks about a bank transfer:\n\n1. Identify the customer.\n2. Retrieve the relevant transaction.\n3. Check the transaction amount.\n4. Check the currency.\n5. Check the transaction status."
+  },
+  {
+    "source": "bank_transfer.md",
+    "text": "## Customer Response\n\nThe agent may explain the current transaction status and\navailable transaction information.\n\nThe agent must not invent information that is not available\nin the system."
+  },
+  {
+    "source": "bank_transfer.md",
+    "text": "## Escalation\n\nEscalate when:\n\n- The transaction cannot be identified.\n- The customer disputes the transaction.\n- The requested action requires human authorisation."
+  },
+  {
+    "source": "bank_transfer.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Create a bank transfer.\n- Modify transaction records.\n- Claim that a transfer succeeded without evidence."
+  },
+  {
+    "source": "card_replacement.md",
+    "text": "# Card Replacement Policy"
+  },
+  {
+    "source": "card_replacement.md",
+    "text": "## Purpose\n\nThis policy defines how card-replacement requests should\nbe handled."
+  },
+  {
+    "source": "card_replacement.md",
+    "text": "## Customer Response\n\nThe agent may provide general information about the card\nreplacement process.\n\nThe agent should first verify the customer's identity using\nthe available customer information before accessing\ncustomer-specific information."
+  },
+  {
+    "source": "card_replacement.md",
+    "text": "## Escalation\n\nEscalate when:\n\n- Identity cannot be verified.\n- The requested action requires human authorisation.\n- The customer reports an issue that cannot be resolved\n  using the available information."
+  },
+  {
+    "source": "card_replacement.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Reveal another customer's information.\n- Modify customer records without authorisation.\n- Issue or activate a replacement card."
+  },
+  {
+    "source": "cash_withdrawal.md",
+    "text": "# Cash Withdrawal Policy"
+  },
+  {
+    "source": "cash_withdrawal.md",
+    "text": "## Purpose\n\nThis policy defines how cash withdrawal questions should\nbe investigated."
+  },
+  {
+    "source": "cash_withdrawal.md",
+    "text": "## Investigation Steps\n\nWhen a customer asks about a cash withdrawal:\n\n1. Identify the customer.\n2. Retrieve the withdrawal transaction.\n3. Check the amount.\n4. Check the currency.\n5. Check the location.\n6. Check the transaction status."
+  },
+  {
+    "source": "cash_withdrawal.md",
+    "text": "## Customer Response\n\nThe agent may provide the transaction information available\nin the system.\n\nIf the customer disputes the withdrawal, the case should\nbe reviewed further."
+  },
+  {
+    "source": "cash_withdrawal.md",
+    "text": "## Escalation\n\nEscalate when:\n\n- The withdrawal cannot be identified.\n- The customer disputes the transaction.\n- Additional investigation is required."
+  },
+  {
+    "source": "cash_withdrawal.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Modify transaction records.\n- Claim that a withdrawal was reversed without evidence.\n- Access another customer's transaction history."
+  },
+  {
+    "source": "duplicate_payment.md",
+    "text": "# Duplicate Payment Policy"
+  },
+  {
+    "source": "duplicate_payment.md",
+    "text": "## Purpose\n\nThis policy defines how a possible duplicate card payment\nshould be investigated."
+  },
+  {
+    "source": "duplicate_payment.md",
+    "text": "## Investigation Steps\n\nWhen a customer reports that they were charged twice:\n\n1. Retrieve the customer's recent transactions.\n2. Compare the transactions using:\n   - Customer ID\n   - Merchant\n   - Amount\n   - Currency\n   - Transaction type\n   - Timestamp\n3. Two transactions occurring within a short period with\n   matching merchant, amount and currency should be treated\n   as a possible duplicate.\n4. The transactions must be reviewed before any refund is\n   recommended."
+  },
+  {
+    "source": "duplicate_payment.md",
+    "text": "## Customer Response\n\nIf the transactions appear to be a duplicate:\n\n- Explain that the transactions appear to be duplicated.\n- Do not claim that a refund has already been issued.\n- Explain that the payment requires verification before\n  a refund can be processed.\n\nIf the transactions do not appear to be duplicated:\n\n- Explain that the available transaction information does\n  not confirm a duplicate payment.\n- Provide the relevant transaction details."
+  },
+  {
+    "source": "duplicate_payment.md",
+    "text": "## Escalation\n\nEscalate the case when:\n\n- Transaction information is incomplete.\n- The customer continues to dispute the result.\n- A refund decision cannot be made using the available\n  information."
+  },
+  {
+    "source": "duplicate_payment.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Automatically issue a refund.\n- Modify transaction records.\n- Claim that a human has reviewed the case when this has\n  not happened.\n- Access transactions belonging to another customer."
+  },
+  {
+    "source": "failed_payment.md",
+    "text": "# Failed Payment Policy"
+  },
+  {
+    "source": "failed_payment.md",
+    "text": "## Purpose\n\nThis policy defines how failed payment reports should\nbe investigated."
+  },
+  {
+    "source": "failed_payment.md",
+    "text": "## Investigation Steps\n\nWhen a customer reports a failed payment:\n\n1. Identify the customer's transaction.\n2. Check the transaction status.\n3. Look for a later transaction involving the same\n   customer, merchant and amount.\n4. Check whether the later transaction completed\n   successfully."
+  },
+  {
+    "source": "failed_payment.md",
+    "text": "## Successful Retry\n\nIf a failed transaction is followed by a successful\ntransaction:\n\n- Inform the customer that a later payment was completed.\n- Provide the relevant transaction information.\n- Do not treat the failed transaction as a completed\n  payment."
+  },
+  {
+    "source": "failed_payment.md",
+    "text": "## No Successful Retry\n\nIf there is no successful retry:\n\n- Explain that the available transaction shows as failed.\n- Do not claim that the payment was completed."
+  },
+  {
+    "source": "failed_payment.md",
+    "text": "## Escalation\n\nEscalate when the transaction history is inconsistent\nor insufficient to determine what happened."
+  },
+  {
+    "source": "failed_payment.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Change transaction status.\n- Mark a failed transaction as successful.\n- Create a new payment.\n- Claim that a payment succeeded without evidence."
+  },
+  {
+    "source": "fraud_policy.md",
+    "text": "# Suspicious Transaction Policy"
+  },
+  {
+    "source": "fraud_policy.md",
+    "text": "## Purpose\n\nThis policy defines how potentially suspicious transactions\nshould be handled."
+  },
+  {
+    "source": "fraud_policy.md",
+    "text": "## Investigation Steps\n\nWhen a customer reports an unfamiliar transaction:\n\n1. Identify the customer.\n2. Retrieve the relevant transaction.\n3. Check the transaction amount.\n4. Check the merchant.\n5. Check the transaction location.\n6. Review recent transaction activity.\n7. Determine whether the available information supports\n   further investigation."
+  },
+  {
+    "source": "fraud_policy.md",
+    "text": "## Important Rule\n\nAn unusual transaction does not automatically mean that\nfraud has occurred.\n\nThe AI agent must distinguish between:\n\n- Observed transaction facts.\n- Indicators that require investigation.\n- Confirmed outcomes."
+  },
+  {
+    "source": "fraud_policy.md",
+    "text": "## Customer Response\n\nThe agent should clearly explain what information was found.\n\nFor example:\n\n- Transaction amount\n- Merchant\n- Currency\n- Location\n- Transaction status\n\nThe agent should avoid claiming that fraud has been confirmed\nunless the available evidence explicitly supports that claim."
+  },
+  {
+    "source": "fraud_policy.md",
+    "text": "## Escalation\n\nEscalate when:\n\n- The customer disputes the transaction.\n- The available information is insufficient.\n- Further investigation is required.\n- The requested action requires human authorisation."
+  },
+  {
+    "source": "fraud_policy.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Declare fraud solely because a transaction is unusual.\n- Access another customer's transactions.\n- Modify transaction records.\n- Take unauthorised financial actions."
+  },
+  {
+    "source": "international_transaction.md",
+    "text": "# International Transaction Policy"
+  },
+  {
+    "source": "international_transaction.md",
+    "text": "## Purpose\n\nThis policy defines how international transactions should\nbe reviewed and explained."
+  },
+  {
+    "source": "international_transaction.md",
+    "text": "## Investigation Steps\n\nWhen a customer asks about an international transaction:\n\n1. Identify the transaction.\n2. Confirm the customer.\n3. Check the transaction location.\n4. Check the transaction currency.\n5. Check the transaction status.\n6. Provide the available transaction information."
+  },
+  {
+    "source": "international_transaction.md",
+    "text": "## Customer Response\n\nThe agent should clearly explain the transaction information\navailable in the system.\n\nThe agent must not invent exchange rates, fees or policies\nthat are not present in the available policy information."
+  },
+  {
+    "source": "international_transaction.md",
+    "text": "## Escalation\n\nEscalate when:\n\n- The transaction cannot be identified.\n- The customer disputes the transaction.\n- Additional review is required."
+  },
+  {
+    "source": "international_transaction.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Invent fees.\n- Invent exchange rates.\n- Modify transaction records.\n- Access another customer's information."
+  },
+  {
+    "source": "large_transaction.md",
+    "text": "# Large Transaction Policy"
+  },
+  {
+    "source": "large_transaction.md",
+    "text": "## Purpose\n\nThis policy defines how unusually large transactions should\nbe reviewed."
+  },
+  {
+    "source": "large_transaction.md",
+    "text": "## Investigation Steps\n\nWhen a transaction has an unusually high amount:\n\n1. Retrieve the transaction.\n2. Confirm the customer.\n3. Check the merchant.\n4. Check the currency.\n5. Review the transaction status.\n6. Determine whether additional review may be required."
+  },
+  {
+    "source": "large_transaction.md",
+    "text": "## Important Rule\n\nA large transaction is not automatically fraudulent.\n\nThe AI agent should report the transaction as an observed\nfact and avoid making unsupported conclusions."
+  },
+  {
+    "source": "large_transaction.md",
+    "text": "## Customer Response\n\nThe agent may provide:\n\n- Transaction amount\n- Currency\n- Merchant\n- Transaction status\n- Available review information"
+  },
+  {
+    "source": "large_transaction.md",
+    "text": "## Escalation\n\nEscalate when the customer disputes the transaction or\nwhen additional review is required."
+  },
+  {
+    "source": "large_transaction.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Automatically block an account.\n- Automatically cancel a transaction.\n- Declare fraud solely because of transaction size.\n- Modify transaction records."
+  },
+  {
+    "source": "rapid_transaction.md",
+    "text": "# Rapid Transaction Policy"
+  },
+  {
+    "source": "rapid_transaction.md",
+    "text": "## Purpose\n\nThis policy defines how unusually rapid transaction activity\nshould be investigated."
+  },
+  {
+    "source": "rapid_transaction.md",
+    "text": "## Investigation Steps\n\nWhen several transactions occur within a short period:\n\n1. Identify the customer.\n2. Retrieve recent transactions.\n3. Compare transaction timestamps.\n4. Compare merchants and amounts.\n5. Check transaction locations.\n6. Determine whether the activity requires further review."
+  },
+  {
+    "source": "rapid_transaction.md",
+    "text": "## Important Rule\n\nRapid transaction activity is an indicator for investigation,\nnot proof of fraudulent activity."
+  },
+  {
+    "source": "rapid_transaction.md",
+    "text": "## Customer Response\n\nThe agent should explain the observed transaction pattern\nwithout making unsupported claims."
+  },
+  {
+    "source": "rapid_transaction.md",
+    "text": "## Escalation\n\nEscalate when:\n\n- The customer does not recognise the activity.\n- Transaction information is incomplete.\n- Further investigation is required."
+  },
+  {
+    "source": "rapid_transaction.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Automatically classify the customer as fraudulent.\n- Automatically block the account.\n- Modify transaction records."
+  },
+  {
+    "source": "refund_policy.md",
+    "text": "# Refund Policy"
+  },
+  {
+    "source": "refund_policy.md",
+    "text": "## Purpose\n\nThis policy defines how refund requests should be handled."
+  },
+  {
+    "source": "refund_policy.md",
+    "text": "## Investigation Steps\n\nWhen a customer requests a refund:\n\n1. Identify the customer.\n2. Retrieve the relevant transaction.\n3. Verify the merchant, amount, currency and transaction\n   status.\n4. Check whether the transaction is eligible for further\n   review.\n5. Provide the customer with the next appropriate step."
+  },
+  {
+    "source": "refund_policy.md",
+    "text": "## Customer Response\n\nThe AI agent may explain:\n\n- The transaction details.\n- Whether the transaction was completed, failed or refunded.\n- Whether additional review is required.\n\nThe AI agent must not state that a refund has been approved\nunless an authorised system explicitly confirms this."
+  },
+  {
+    "source": "refund_policy.md",
+    "text": "## Escalation\n\nEscalate when:\n\n- The transaction cannot be identified.\n- The customer disputes the transaction information.\n- The requested action requires an authorised human decision.\n- The available information is insufficient."
+  },
+  {
+    "source": "refund_policy.md",
+    "text": "## Restrictions\n\nThe AI agent must not:\n\n- Automatically approve a refund.\n- Modify transaction records.\n- Promise a refund.\n- Claim that a refund has been processed without evidence."
+  }
+]
