@@ -14,9 +14,13 @@ from transformers import (
     BitsAndBytesConfig
 )
 from peft import PeftModel
+from huggingface_hub import snapshot_download
 
 
-PROJECT_DIR = Path("/content/agentguard")
+if "__file__" in globals():
+    PROJECT_DIR = Path(__file__).resolve().parent
+else:
+    PROJECT_DIR = Path("/content/agentguard")
 
 if str(PROJECT_DIR) not in sys.path:
     sys.path.insert(0, str(PROJECT_DIR))
@@ -83,6 +87,9 @@ def normalize_action(action):
         "update_status": "status_change",
         "update_transaction_status": "status_change",
         "change_transaction_status": "status_change",
+
+        "require_human": "manual_review",
+        "human_review": "manual_review",
     }
 
     return action_map.get(action, action)
@@ -236,12 +243,34 @@ def evaluate_case(request: CaseRequest):
 print("Loading AgentGuard QLoRA model...")
 
 
-MODEL_DIR = Path(
-    os.getenv(
-        "AGENTGUARD_MODEL_DIR",
-        "/models/agentguard-qlora"
-    )
+BASE_MODEL_ID = os.getenv(
+    "AGENTGUARD_BASE_MODEL",
+    "Qwen/Qwen2.5-3B-Instruct"
 )
+
+MODEL_SOURCE = os.getenv(
+    "AGENTGUARD_MODEL_ID",
+    "Mihirbarve/agentguard-qlora"
+)
+
+
+def resolve_model_path():
+    local_path = Path(MODEL_SOURCE)
+
+    if local_path.exists():
+        return str(local_path)
+
+    return snapshot_download(
+        repo_id=MODEL_SOURCE,
+        repo_type="model"
+    )
+
+
+print("Loading AgentGuard QLoRA model...")
+
+MODEL_DIR = resolve_model_path()
+
+print("Adapter location:", MODEL_DIR)
 
 
 quantization_config = BitsAndBytesConfig(
@@ -252,20 +281,22 @@ quantization_config = BitsAndBytesConfig(
 )
 
 
-base_model = AutoModelForCausalLM.from_pretrained(
-    "Qwen/Qwen2.5-3B-Instruct",
-    quantization_config=quantization_config,
-    device_map="auto"
-)
-
-
 tokenizer = AutoTokenizer.from_pretrained(
-    MODEL_DIR
+    BASE_MODEL_ID,
+    trust_remote_code=True
 )
-
 
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
+
+
+base_model = AutoModelForCausalLM.from_pretrained(
+    BASE_MODEL_ID,
+    quantization_config=quantization_config,
+    device_map="auto",
+    dtype=torch.bfloat16,
+    trust_remote_code=True
+)
 
 
 model = PeftModel.from_pretrained(
@@ -273,9 +304,10 @@ model = PeftModel.from_pretrained(
     MODEL_DIR
 )
 
-
 model.eval()
 
 
 print("AgentGuard QLoRA model loaded successfully.")
+print("Base model:", BASE_MODEL_ID)
+print("Adapter:", MODEL_SOURCE)
 print("Device:", next(model.parameters()).device)
