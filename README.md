@@ -1,434 +1,509 @@
-# AgentGuard
+The system separates **decision-making** from **action execution**.
 
-## Enterprise LLM & Agent Evaluation, Security and Governance Platform
+This allows the LLM to produce a structured decision while preventing the model from directly executing consequential operations.
 
-AgentGuard is a synthetic financial-services AI platform for evaluating and governing LLM-powered agents.
-
-The project combines:
-
-- Policy-grounded RAG
-- LangGraph agent orchestration
-- Tool use
-- Structured LLM decision-making
-- QLoRA fine-tuning
-- Automated evaluation
-- Red-team security testing
-- Action governance
-- Human approval boundaries
-- End-to-end unauthorized-action prevention
-
-The central design principle is:
-
-> **The LLM is not the security boundary.**
-
-The model can recommend an action, but executable financial or transaction-changing actions must pass through an independent governance layer.
-
-## Architecture
-
-```text
-Customer Case
-     |
-     v
-  FastAPI
-     |
-     v
-LangGraph Agent
-     |
-     +----------------+----------------+
-     |                |                |
-     v                v                v
-Customer Tool   Transaction Tool   Policy RAG
-     |                |                |
-     v                v                v
-Customer DB    Transaction DB    Policy Docs
-     |                |                |
-     +----------------+----------------+
-                      |
-                      v
-               Agent Decision
-                      |
-                      v
-                Action Guard
-                  /       \
-                 /         \
-                v           v
-           Blocked      Human Approval
-                              |
-                              v
-                       Action Executor
-```
-
-## Problem
-
-Enterprise LLM agents can generate useful decisions but introduce risks when they:
-
-- follow malicious instructions
-- access data belonging to another customer
-- bypass policies
-- execute unauthorized financial actions
-- incorrectly confirm transactions
-- expose system or developer instructions
-- bypass human review
-
-AgentGuard evaluates these behaviours separately from model capability and places a deterministic governance layer between model decisions and executable actions.
+---
 
 ## Core Components
 
-### 1. Policy RAG
+### 1. Policy-Grounded RAG
 
-The system retrieves relevant synthetic financial policies using semantic retrieval with FAISS and sentence-transformer embeddings.
+AgentGuard retrieves relevant synthetic financial-services policies before making decisions.
 
-The improved retriever combines:
+The retrieval pipeline uses:
 
-- semantic similarity
-- keyword matching
-- exact phrase matching
+-  Sentence Transformers 
+-  FAISS 
+-  Semantic similarity 
+-  Policy-specific metadata 
+-  Keyword matching 
+-  Exact phrase signals 
 
-The frozen evaluation benchmark contains 4,511 synthetic policy-retrieval cases.
+The improved retriever combines semantic and lexical evidence to rank policy passages.
 
-### 2. Agent Orchestration
+### Retrieval Benchmark
+
+| Metric         | Result      | Cases |
+| -------------- | ----------- | ----- |
+| Top-1 Accuracy | **100.00%** | 4,511 |
+| Top-3 Accuracy | **100.00%** | 4,511 |
+| MRR            | **1.00**    | 4,511 |
+
+The results are from a controlled synthetic benchmark and should not be interpreted as production retrieval performance.
+
+---
+
+## 2. LangGraph Agent
 
 The agent uses LangGraph to coordinate:
 
-- customer lookup
-- transaction lookup
-- related-transaction analysis
-- policy retrieval
-- structured decision generation
-- action governance
+-  Customer lookup 
+-  Transaction lookup 
+-  Related transaction investigation 
+-  Policy retrieval 
+-  Structured decision generation 
+-  Action governance 
 
-### 3. Tool Use
+The agent produces a structured decision containing:
 
-The agent can access controlled tools for:
-
-- customer information
-- transaction information
-- related transactions
-- policy retrieval
-
-### 4. QLoRA Fine-Tuning
-
-Qwen2.5-3B-Instruct was fine-tuned using QLoRA for structured enterprise case decision-making.
-
-Target output schema:
-
-```json
-{
-  "action": "...",
-  "reason": "...",
-  "risk_level": "...",
-  "requires_human": true,
-  "customer_response": "..."
-}
+```
 ```
 
-The training dataset contains synthetic financial-support scenarios covering:
+```
+action
+reason
+risk_level
+requires_human
+customer_response
+```
 
-- duplicate payments
-- large transactions
-- unusual locations
-- failed-successful retries
-- rapid transactions
+The decision is treated as a proposal rather than an authorization to execute an action.
 
-Frozen evaluation examples were excluded from training.
+---
 
-### 5. Action Governance
+## 3. Tool Use
 
-Executable actions are separated from informational actions.
+AgentGuard provides tools for customer lookup, transaction lookup, related transaction investigation, and policy retrieval.
 
-Supported executable action types include:
+Related transaction lookup is particularly important for duplicate payments, failed-payment retries, and rapid transaction scenarios.
 
-- refund
-- transfer
-- status change
+---
 
-The Action Guard checks:
+## 4. QLoRA Fine-Tuning
 
-1. whether the action is supported
-2. whether customer identity is available
-3. whether supporting evidence exists
-4. whether human approval is required
+AgentGuard fine-tunes `Qwen/Qwen2.5-3B-Instruct` using QLoRA.
 
-The executor does not execute executable actions without explicit approval.
+Training was performed on a Google Colab NVIDIA L4 GPU using:
 
-## Evaluation
+-  4-bit NF4 quantization 
+-  LoRA adapters 
+-  BF16 computation 
+-  Gradient checkpointing 
+-  8-bit paged AdamW 
 
-### RAG Evaluation
+The adapter trains approximately 29.9M parameters, or 0.96% of the base model.
 
-| Metric | Result | Cases |
-|---|---:|---:|
-| Top-1 Accuracy | 100.00% | 4,511 |
-| Top-3 Accuracy | 100.00% | 4,511 |
-| MRR | 1.000 | 4,511 |
+### Dataset
 
-These results are from the frozen synthetic policy-retrieval benchmark.
+The synthetic scenario dataset contains:
 
-### Base Model vs QLoRA
+-  1,700 labelled investigation scenarios 
+-  1,356 training examples 
+-  169 validation examples 
+-  175 held-out test examples 
 
-| Metric | Base Qwen2.5-3B | AgentGuard QLoRA |
-|---|---:|---:|
-| Held-out cases | 175 | 175 |
-| Semantic action accuracy | 75.43% | 100.00% |
-| Structured JSON compliance | 0% | 100.00% |
-| Evidence usage | 100% | 100.00% |
-| Policy compliance | 100% | 100.00% |
-| Human-escalation accuracy | Not reliably measurable | 100.00% |
+The scenarios include duplicate payments, large transactions, unusual locations, failed-to-successful retries, and rapid transactions.
 
-The base-model structured JSON score is not treated as a model capability score because the base model produced natural-language decisions rather than the required structured output format.
+---
 
-### QLoRA Evaluation
+## 5. Base Model vs QLoRA
 
-On 175 held-out synthetic cases:
+| Metric                     | Base Qwen2.5-3B         | AgentGuard QLoRA |
+| -------------------------- | ----------------------- | ---------------- |
+| Held-out cases             | 175                     | 175              |
+| Structured JSON compliance | 0%                      | **100%**         |
+| Semantic action accuracy   | 75.43%                  | **100%**         |
+| Evidence usage             | 100%                    | **100%**         |
+| Policy compliance          | 100%                    | **100%**         |
+| Human-escalation accuracy  | Not reliably measurable | **100%**         |
 
-| Metric | Result |
-|---|---:|
-| Structured JSON compliance | 100.00% |
-| Action accuracy | 100.00% |
-| Risk-level accuracy | 100.00% |
-| Human-escalation accuracy | 100.00% |
-| Evidence usage | 100.00% |
-| Policy compliance | 100.00% |
+The comparison focuses on structured enterprise decision behaviour rather than general language-model capability.
 
-These results apply specifically to the synthetic held-out benchmark.
+---
 
-## Security Evaluation
+## 6. Action Governance
 
-### Model-Level Red Team
+A core part of AgentGuard is the deterministic **Action Guard**.
 
-The fine-tuned model was tested against 20 synthetic adversarial prompts covering:
+The model cannot directly execute financial or transaction-changing actions.
 
-- prompt injection
-- system prompt extraction
-- credential requests
-- internal information requests
-- unauthorized refunds
-- unauthorized status changes
-- transfer creation
-- customer-data boundary violations
-- cross-customer access
-- policy bypass
-- human-review bypass
+```
+```
 
-**QLoRA red-team pass rate: 4 / 20 — 20%.**
-
-This demonstrates that fine-tuning alone does not provide a sufficient security boundary.
-
-### Governance-Level Security
-
-The same adversarial model outputs were passed through:
-
-```text
-QLoRA Model
+```
+LLM Decision
+     |
+     v
+Action Normalization
      |
      v
 Action Guard
      |
-     v
-Action Executor
+     +-----------------------------+
+     |                             |
+     v                             v
+Non-executable                 Executable
+     |                             |
+     v                             v
+Allowed                    Human Approval Required
+                                   |
+                                   v
+                            Action Executor
 ```
 
-The system prevented unauthorized execution in:
+Supported executable action interfaces include:
 
-**20 / 20 cases — 100%.**
+-  Refund 
+-  Transfer 
+-  Transaction status change 
 
-The executor was tested without human approval.
+These actions do not execute automatically.
 
-## Security Design
+The Action Guard independently verifies:
 
-AgentGuard follows a defense-in-depth approach.
+-  Supported action 
+-  Customer identity 
+-  Supporting evidence 
+-  Human approval requirement 
 
-```text
-User
- |
- v
+This creates a separation between what the model recommends and what the system is permitted to execute.
+
+---
+
+## 7. Security and Red-Team Evaluation
+
+AgentGuard includes adversarial evaluation covering:
+
+-  Prompt injection 
+-  System prompt extraction 
+-  Developer instruction extraction 
+-  Credential requests 
+-  Policy bypass 
+-  Unauthorized refunds 
+-  Unauthorized transfers 
+-  Transaction status changes 
+-  Cross-customer data access 
+-  Customer ID manipulation 
+-  Human-review bypass 
+-  Duplicate-payment policy bypass 
+-  Rapid-transaction policy bypass 
+
+### Model Red-Team Benchmark
+
+| Metric                   | Result         |
+| ------------------------ | -------------- |
+| Adversarial cases        | 20             |
+| QLoRA red-team pass rate | **20% (4/20)** |
+
+The result demonstrates that the fine-tuned model can still produce unsafe behaviour under adversarial prompting.
+
+This supports the design principle that model alignment alone is not sufficient as an action-security boundary.
+
+---
+
+## 8. End-to-End Governance Security
+
+The same adversarial cases were passed through:
+
+```
+```
+
+```
 LLM
- |
- | potentially unsafe decision
- v
+ ↓
+Action Normalization
+ ↓
 Action Guard
- |
- +---- unsupported action ----> BLOCK
- |
- +---- missing evidence ------> BLOCK
- |
- +---- executable action -----> HUMAN APPROVAL
- |
- v
+ ↓
 Action Executor
- |
- v
-Execution
 ```
 
-The model therefore cannot directly authorize a financial or transaction-changing operation.
+with execution approval disabled.
 
-## Synthetic Data
+| Metric                         | Result      |
+| ------------------------------ | ----------- |
+| Adversarial cases              | 20          |
+| Unauthorized actions prevented | **20 / 20** |
+| Unauthorized-action prevention | **100%**    |
+| Execution errors               | **0**       |
 
-The project uses synthetic data rather than real customer or financial information.
+This benchmark measures the tested governance path, not overall system security.
 
-Dataset components include:
+---
 
-- 10,000 synthetic customers
-- 100,800 synthetic transactions
-- 1,700 scenario labels
-- 5,000 synthetic support cases
-- synthetic policy documents
+## 9. Agent Evaluation
 
-## Technology Stack
+The AgentGuard evaluation framework measures:
 
-### Machine Learning
+-  Action acceptability 
+-  Evidence usage 
+-  Policy compliance 
+-  Human escalation 
+-  Safety 
 
-- Python
-- PyTorch
-- Hugging Face Transformers
-- PEFT
-- QLoRA
-- bitsandbytes
-- sentence-transformers
+| Metric               | Result   |
+| -------------------- | -------- |
+| Action acceptability | **100%** |
+| Evidence usage       | **100%** |
+| Policy compliance    | **100%** |
+| Human escalation     | **100%** |
+| Safety               | **100%** |
 
-### LLM / Agent
+These results are based on the defined synthetic evaluation cases.
 
-- Qwen2.5-3B-Instruct
-- LangGraph
-- Groq
-- Pydantic
+---
 
-### Retrieval
+## 10. Training and Evaluation Separation
 
-- FAISS
-- Sentence Transformers
+AgentGuard separates training data from evaluation data.
 
-### API / Backend
+The evaluation pipeline separately measures:
 
-- FastAPI
-- SQLAlchemy
-- Pydantic
+```
+```
 
-### Evaluation
+```
+Retrieval
+   ↓
+Agent Decision
+   ↓
+Tool Use
+   ↓
+Security
+   ↓
+Governance
+```
 
-- Pandas
-- Python evaluation pipelines
-- Synthetic benchmark datasets
-- Red-team evaluation
+This makes it possible to identify whether an error originates from retrieval, model decision-making, tool selection, or action governance.
 
-### Training Hardware
+---
 
-QLoRA training was performed on a Google Colab NVIDIA L4 GPU.
+## 11. API
 
-## Project Structure
+AgentGuard includes a FastAPI inference interface.
 
-```text
+Endpoints:
+
+```
+```
+
+```
+GET  /health
+POST /case
+```
+
+The API:
+
+1.  Loads the QLoRA adapter 
+2.  Accepts a customer case 
+3.  Generates a structured model decision 
+4.  Normalizes the requested action 
+5.  Passes the action through the Action Guard 
+6.  Passes the result to the Action Executor 
+7.  Returns the decision and governance result 
+
+A live GPU API test successfully returned:
+
+```
+```
+
+```
+status: healthy
+model_loaded: true
+device: cuda:0
+```
+
+The API is designed as a portable inference prototype rather than a production financial-services API.
+
+---
+
+## 12. Docker
+
+A GPU-oriented Docker configuration is included using:
+
+-  NVIDIA CUDA 12.8 
+-  Ubuntu 24.04 
+-  Python 3 
+-  FastAPI 
+-  Uvicorn 
+-  Transformers 
+-  PEFT 
+-  bitsandbytes 
+-  PyTorch 
+
+The Docker configuration is prepared for NVIDIA GPU environments.
+
+The Docker image has not been presented as locally validated. Cloud deployment and production infrastructure remain future work.
+
+---
+
+## 13. Synthetic Data
+
+The project uses entirely synthetic financial-services data.
+
+The generated data includes:
+
+-  Customers 
+-  Transactions 
+-  Support cases 
+-  Scenario labels 
+-  Synthetic policy documents 
+
+Controlled scenarios include:
+
+-  duplicate_payment 
+-  large_transaction 
+-  unusual_location 
+-  failed_successful_retry 
+-  rapid_transactions 
+
+The project does not use real customer information, confidential bank policies, proprietary financial data, or real transaction records.
+
+---
+
+## 14. Project Structure
+
+```
+```
+
+```
 Agentguard/
-├── agent/
-│   ├── actions/
-│   ├── tools/
-│   ├── prompts/
-│   ├── tests/
-│   ├── action_guard.py
-│   ├── action_executor.py
-│   ├── graph.py
-│   └── llm_decision.py
-│
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   ├── policies/
-│   └── fine_tuning/
-│
-├── evaluation/
-│   ├── results/
-│   ├── evaluator.py
-│   ├── test_cases.py
-│   ├── tool_evaluator.py
-│   ├── security_evaluator.py
-│   └── final_evaluation.py
-│
-├── rag/
-│   ├── policy_retriever.py
-│   ├── improved_retriever.py
-│   ├── policy_metadata.py
-│   └── index/
-│
-├── scripts/
-│   ├── generate_data.py
-│   ├── generate_transactions.py
-│   ├── inject_scenarios.py
-│   ├── validate_scenarios.py
-│   ├── generate_support_cases.py
-│   ├── evaluate_policy_rag.py
-│   ├── analyze_rag_errors.py
-│   └── evaluate_improved_rag.py
-│
-└── README.md
+|
++-- agent/
+|   +-- actions/
+|   +-- tools/
+|   +-- tests/
+|   +-- action_guard.py
+|   +-- action_executor.py
+|   +-- graph.py
+|   +-- llm_decision.py
+|
++-- data/
+|   +-- policies/
+|   +-- fine_tuning/
+|
++-- evaluation/
+|   +-- evaluator.py
+|   +-- test_cases.py
+|   +-- tool_evaluator.py
+|   +-- security_evaluator.py
+|   +-- action_security_evaluator.py
+|   +-- end_to_end_action_security.py
+|
++-- rag/
+|   +-- policy_retriever.py
+|   +-- improved_retriever.py
+|   +-- policy_metadata.py
+|   +-- index/
+|
++-- scripts/
+|
++-- api.py
++-- Dockerfile
++-- requirements-api.txt
++-- requirements-qlora.txt
++-- requirements.txt
++-- ARCHITECTURE.md
++-- README.md
 ```
 
-## Key Engineering Findings
+---
+
+## 15. Key Engineering Findings
 
 ### RAG
 
-The improved retrieval approach achieved perfect retrieval metrics on the frozen synthetic benchmark.
+The improved retrieval system achieved perfect Top-1 and Top-3 retrieval accuracy on the frozen synthetic benchmark.
 
 ### Fine-Tuning
 
-QLoRA improved structured enterprise decision-making compared with the base model on the held-out benchmark.
+QLoRA improved structured decision behaviour on the held-out benchmark, particularly structured output and action classification.
 
 ### Security
 
-The fine-tuned model remained vulnerable to adversarial prompts.
+The red-team benchmark demonstrates that model-level safeguards remain imperfect under adversarial prompts.
 
 ### Governance
 
-A deterministic Action Guard separated model decisions from executable actions and prevented unauthorized execution across the tested adversarial cases.
+The deterministic Action Guard prevented unauthorized action execution across the tested end-to-end adversarial cases.
 
-This supports the architectural principle that LLM output should be treated as an untrusted decision proposal when it can lead to consequential actions.
+This supports a key architectural principle:
 
-## Limitations
+> **LLM output should be treated as an untrusted decision proposal when it can lead to consequential actions.**
+
+---
+
+## 16. Limitations
 
 The evaluation results are based on synthetic data and controlled benchmarks.
 
 They should not be interpreted as evidence of production-level performance or security in a real financial institution.
 
-The project does not use real customer information, confidential bank policies, or proprietary financial data.
+The project does not use real customer information, confidential policies, or proprietary financial data.
 
-The security benchmark is limited to the defined adversarial test cases and does not establish complete security coverage.
+The red-team benchmark is limited to the defined adversarial cases and does not establish complete security coverage.
 
-## Future Work
+The Docker configuration is prepared for GPU deployment but has not been presented as a production-validated container image.
 
-- FastAPI production interface
-- Docker containerisation
-- cloud deployment
-- CI/CD evaluation pipeline
-- experiment tracking
-- agent tracing
-- latency and cost monitoring
-- larger adversarial benchmark
-- automated regression testing
-- human-in-the-loop approval UI
-- model and policy versioning
-- production observability
+---
 
-## Project Objective
+## 17. Future Work
 
-AgentGuard demonstrates an end-to-end approach to building, evaluating and governing LLM-powered agents:
+Planned extensions include:
 
-```text
-Data
- ↓
-RAG
- ↓
-Agent
- ↓
-Tool Use
- ↓
-QLoRA
- ↓
-Evaluation
- ↓
-Red Teaming
- ↓
-Governance
- ↓
-Human Approval
- ↓
-Execution
+-  Cloud GPU deployment 
+-  CI/CD evaluation pipeline 
+-  Automated regression testing 
+-  Experiment tracking 
+-  Agent tracing 
+-  Latency and cost monitoring 
+-  Larger adversarial benchmarks 
+-  Human-in-the-loop approval UI 
+-  Model and policy versioning 
+-  Production observability 
+-  Authentication and authorization 
+-  Persistent audit logging 
+
+---
+
+## 18. Project Objective
+
+AgentGuard demonstrates an end-to-end approach to building, evaluating, securing, and governing LLM-powered agents:
+
 ```
+```
+
+```
+Synthetic Data
+      ↓
+Policy RAG
+      ↓
+LangGraph Agent
+      ↓
+Tool Use
+      ↓
+QLoRA
+      ↓
+Evaluation
+      ↓
+Red Teaming
+      ↓
+Action Governance
+      ↓
+Human Approval
+      ↓
+Execution Boundary
+      ↓
+FastAPI
+```
+
+The project focuses on a practical enterprise AI engineering question:
+
+> **How can an LLM-powered agent be evaluated and connected to consequential tools without treating the model itself as the security boundary?**
+>
+> ''', encoding='utf-8')"
+
+```
+```
+
+````
+
+**Important:** this is one single command. Paste the entire command beginning with `python -c` and ending with `''', encoding='utf-8')"`.
+
+Then **do not paste the README into the terminal again**. Just run:
+
+```powershell
+Get-Item README.md | Select-Object Name, Length
+````
+
+If it returns a size around 10–15 KB, the README was written successfully.
